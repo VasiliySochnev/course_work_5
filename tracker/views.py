@@ -2,7 +2,7 @@ from rest_framework import generics, viewsets
 from rest_framework.permissions import IsAuthenticated
 
 from tracker.serializers import HabitSerializer, NiceHabitSerializer
-from users.permissions import IsOwner, IsPublic
+from users.permissions import IsOwner
 
 from .models import Habit, Nice_Habit
 from .paginators import HabitPaginator, NiceHabitPaginator
@@ -10,7 +10,7 @@ from .paginators import HabitPaginator, NiceHabitPaginator
 
 class HabitViewSet(viewsets.ModelViewSet):
     serializer_class = HabitSerializer
-    queryset = Habit.objects.all()
+    queryset = Habit.objects.filter(is_public=True)
     pagination_class = HabitPaginator
 
     def get_permissions(self, permission_classes=None):
@@ -19,11 +19,16 @@ class HabitViewSet(viewsets.ModelViewSet):
         elif self.action in ("create",):
             permission_classes = [IsAuthenticated]
         elif self.action in ("list",):
-            permission_classes = [IsAuthenticated | IsPublic]
+            permission_classes = [IsAuthenticated]
         else:
             permission_classes = [IsAuthenticated]
 
         return [permission() for permission in permission_classes]
+
+    def get_object(self):
+        obj = super().get_object()
+        self.check_object_permissions(self.request, obj)  # Проверка разрешений для объекта
+        return obj
 
     def perform_create(self, serializer):
         new_habit = serializer.save()
@@ -33,9 +38,9 @@ class HabitViewSet(viewsets.ModelViewSet):
 
 class NiceHabitListView(generics.ListAPIView):
     serializer_class = NiceHabitSerializer
-    queryset = Nice_Habit.objects.all()
+    queryset = Nice_Habit.objects.filter(is_public=True)
     pagination_class = NiceHabitPaginator
-    permission_classes = [IsAuthenticated | IsPublic]
+    permission_classes = [IsAuthenticated]
 
 
 class NiceHabitCreateView(generics.CreateAPIView):
