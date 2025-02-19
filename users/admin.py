@@ -1,4 +1,6 @@
+from django import forms
 from django.contrib import admin
+from django.forms.widgets import TimeInput
 
 from tracker.models import Habit, Nice_Habit
 from users.models import User
@@ -20,17 +22,28 @@ class UserAdmin(admin.ModelAdmin):
     list_filter = ("email",)
 
 
+class HabitForm(forms.ModelForm):
+    class Meta:
+        model = Habit
+        fields = "__all__"
+        widgets = {
+            "time": TimeInput(format="%H:%M"),  # Устанавливаем формат времени
+        }
+
+
 @admin.register(Habit)
 class HabitAdmin(admin.ModelAdmin):
+    form = HabitForm
     list_display = (
         "owner",
         "place",
         "time",
-        "action",
-        "related_habit",
+        "days_of_week",
         "period",
-        "reward",
+        "action",
         "execution_time",
+        "related_habit",
+        "reward",
         "is_public",
     )
     search_fields = ("action",)

@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     "tracker",
     "django_filters",
     "rest_framework_simplejwt",
+    "django_celery_beat",
 ]
 
 REST_FRAMEWORK = {
@@ -121,3 +122,33 @@ MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "users.User"
+
+
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
+
+CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/0"
+
+CELERY_TIMEZONE = TIME_ZONE
+
+CELERY_TASK_TRACK_STARTED = True
+
+CELERY_TASK_TIME_LIMIT = 30 * 60
+
+# В этой версии параметр broker_connection_retry
+# больше не управляет попытками повторного подключения к брокеру
+# во время запуска. Вместо этого нужно использовать новый параметр broker_connection_retry_on_startup.
+
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+
+CELERY_BEAT_SCHEDULE = {
+    "message_of_habit": {
+        "task": "tracker.tasks.message_of_habit",  # Путь к задаче
+        "schedule": timedelta(
+            minutes=2
+        ),  # Расписание выполнения задачи (например, каждые 10 минут)
+    },
+}
+
+TELEGRAM_BOT_TOKEN = "8086321251:AAFHtLX-9YMuByUaH7pjpqUo5x4xSG-W894"
+
+URL_TELEGRAM = "https://api.telegram.org/bot"

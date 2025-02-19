@@ -1,9 +1,8 @@
 from rest_framework import serializers
 
 from tracker.models import Habit, Nice_Habit
-from tracker.validators import (ExecutionValidator, PeriodValidator,
-                                RelatedHabitValidator, RewardValidator,
-                                TimeValidator)
+from tracker.validators import (PeriodValidator, RelatedHabitValidator,
+                                RewardValidator, TimeValidator)
 
 
 class HabitSerializer(serializers.ModelSerializer):
@@ -15,7 +14,6 @@ class HabitSerializer(serializers.ModelSerializer):
             RewardValidator(related_habit_field="related_habit", reward_field="reward"),
             RelatedHabitValidator(field="related_habit_id"),
             PeriodValidator(field="period"),
-            ExecutionValidator(field="last_performed"),
         ]
 
 

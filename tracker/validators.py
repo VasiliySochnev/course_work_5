@@ -69,23 +69,7 @@ class PeriodValidator:
         if period is None:
             return
 
-        if period > timedelta(days=7):
+        if period < timedelta(days=1):
             raise serializers.ValidationError(
                 "Привычка не может выполняться реже, чем 1 раз в 7 дней."
             )
-
-
-class ExecutionValidator:
-    """Валидация для проверки выполнения привычки."""
-
-    def __init__(self, field):
-        self.field = field
-
-    def __call__(self, value):
-        last_performed = value.get(self.field)
-        if last_performed:
-            days_last_performed = (timezone.now().date() - last_performed).days
-            if days_last_performed > 7:
-                raise serializers.ValidationError(
-                    "Нельзя не выполнять привычку более 7 дней."
-                )

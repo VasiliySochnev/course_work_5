@@ -20,6 +20,9 @@ class User(AbstractUser):
     avatar = models.ImageField(
         upload_to="photo/avatars/", verbose_name="Аватар", blank=True, null=True
     )
+    tg_chat_id = models.CharField(
+        max_length=100, verbose_name="Чат ID телеграма", blank=True, null=True
+    )
     is_active = models.BooleanField(
         default=True, verbose_name="Активность", blank=True, null=True
     )

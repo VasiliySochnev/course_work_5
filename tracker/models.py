@@ -1,4 +1,4 @@
-from datetime import time, timezone
+from datetime import time
 
 from django.conf import settings
 from django.db import models
@@ -21,7 +21,7 @@ class Nice_Habit(models.Model):
     )
 
     def __str__(self):
-        return f"{self.action} ({'Публичная' if self.is_public else 'Приватная'})"
+        return f"{self.action}"
 
     class Meta:
         verbose_name = "Приятная привычка"
@@ -61,10 +61,10 @@ class Habit(models.Model):
         related_name="related_habits",
     )
     period = models.IntegerField(
-        default=1,
+        default=7,
         blank=True,
         null=True,
-        verbose_name="Период выполнения (в днях), 1 - ежедневно",
+        verbose_name="Период выполнения (в днях), 7 - ежедневно",
     )
     reward = models.CharField(
         max_length=200,
@@ -76,18 +76,14 @@ class Habit(models.Model):
         default=default_time_2, verbose_name="Время на выполнение привычки"
     )
     is_public = models.BooleanField(default=True, verbose_name="Признак публичности")
-    last_performed = models.DateField(
-        null=True,
+
+    days_of_week = models.CharField(
+        max_length=100,
+        verbose_name="Дни недели",
         blank=True,
-        editable=False,
-        verbose_name="Поле для хранения даты последнего выполнения",
+        null=True,
+        help_text="Введите дни недели через запятую (например, 'пн, вт, ср')",
     )
-
-    def perform_habit(self):
-        """Метод для сохранения даты выполнения привычки."""
-
-        self.last_performed = timezone.now()
-        self.save()
 
     def __str__(self):
         return f"{self.action} в {self.time} {self.place} ({'Публичная' if self.is_public else 'Приватная'})"
