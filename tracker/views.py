@@ -1,5 +1,7 @@
-from rest_framework import generics, viewsets
+from django.shortcuts import get_object_or_404
+from rest_framework import generics, viewsets, status
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from tracker.serializers import HabitSerializer, NiceHabitSerializer
 from users.permissions import IsOwner
@@ -14,7 +16,7 @@ class HabitViewSet(viewsets.ModelViewSet):
     queryset = Habit.objects.filter(is_public=True)
     pagination_class = HabitPaginator
 
-    def get_permissions(self, permission_classes=None):
+    def get_permissions(self):
         if self.action in (
             "destroy",
             "update",
@@ -30,12 +32,7 @@ class HabitViewSet(viewsets.ModelViewSet):
 
         return [permission() for permission in permission_classes]
 
-    def get_object(self):
-        obj = super().get_object()
-        self.check_object_permissions(
-            self.request, obj
-        )  # Проверка разрешений для объекта
-        return obj
+
 
     def perform_create(self, serializer):
         days_of_week = serializer.validated_data.get("days_of_week", "")
@@ -51,11 +48,14 @@ class HabitViewSet(viewsets.ModelViewSet):
         new_habit.owner = self.request.user
         new_habit.save()
 
-    def update(self, instance, validated_data):
-        # Получаем новые данные о днях недели из валидированных данных
-        days_of_week = validated_data.get("days_of_week", None)
+    def update(self, request, *args, **kwargs):
+        # Используем встроенный метод для получения объекта
+        instance = self.get_object()
 
-        # Определяем допустимые дни недели
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+
+        days_of_week = serializer.validated_data.get("days_of_week", None)
         valid_days = {"пн", "вт", "ср", "чт", "пт", "сб", "вс"}
 
         if days_of_week is not None:
@@ -69,17 +69,17 @@ class HabitViewSet(viewsets.ModelViewSet):
                 formatted_days = ", ".join(unique_days)
                 instance.days_of_week = formatted_days
             else:
-                # Если не было валидных дней, можно выбросить ошибку или обработать по-другому
-                raise ValueError("Не введено ни одного допустимого дня недели.")
+                return Response({"error": "Не введено ни одного допустимого дня недели."},
+                                status=status.HTTP_400_BAD_REQUEST)
 
         # Обновляем остальные поля, если они есть
-        for attr, value in validated_data.items():
+        for attr, value in serializer.validated_data.items():
             if attr != "days_of_week":
                 setattr(instance, attr, value)
 
         # Сохраняем обновленный экземпляр
         instance.save()
-        return instance
+        return Response(serializer.data)
 
 
 class NiceHabitListView(generics.ListAPIView):
@@ -101,7 +101,7 @@ class NiceHabitCreateView(generics.CreateAPIView):
 
 class NiceHabitRetrieveAPIView(generics.RetrieveAPIView):
     serializer_class = NiceHabitSerializer
-    queryset = Nice_Habit.objects.all()
+    queryset = Nice_Habit.objects.filter()
     permission_classes = [IsOwner]
 
 

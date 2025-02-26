@@ -10,7 +10,7 @@ class HabitSerializer(serializers.ModelSerializer):
         model = Habit
         fields = "__all__"
         validators = [
-            TimeValidator(field="execution_time"),
+            # TimeValidator(field="execution_time"),
             RewardValidator(related_habit_field="related_habit", reward_field="reward"),
             RelatedHabitValidator(field="related_habit_id"),
             PeriodValidator(field="period"),

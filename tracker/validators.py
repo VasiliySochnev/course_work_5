@@ -30,7 +30,7 @@ class RewardValidator:
         related_habit = value.get(self.related_habit_field)
         reward = value.get(self.reward_field)
         if (related_habit is not None and reward) or (
-            related_habit is None and not reward
+            reward is None and related_habit
         ):
             raise serializers.ValidationError(
                 'Можно заполнить только одно из полей: "Связанная приятная привычка" или "Вознаграждение".'

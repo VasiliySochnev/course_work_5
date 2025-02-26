@@ -19,6 +19,7 @@ class Nice_Habit(models.Model):
     is_nice = models.BooleanField(
         default=True, verbose_name="Признак приятной привычки"
     )
+    id = models.AutoField(primary_key=True)
 
     def __str__(self):
         return f"{self.action}"
@@ -84,6 +85,7 @@ class Habit(models.Model):
         null=True,
         help_text="Введите дни недели через запятую (например, 'пн, вт, ср')",
     )
+    id = models.AutoField(primary_key=True)
 
     def __str__(self):
         return f"{self.action} в {self.time} {self.place} ({'Публичная' if self.is_public else 'Приватная'})"

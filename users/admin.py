@@ -45,6 +45,7 @@ class HabitAdmin(admin.ModelAdmin):
         "related_habit",
         "reward",
         "is_public",
+        "id",
     )
     search_fields = ("action",)
     list_filter = ("owner",)
@@ -57,6 +58,7 @@ class NiceHabitAdmin(admin.ModelAdmin):
         "action",
         "is_public",
         "is_nice",
+        "id",
     )
     search_fields = ("action",)
     list_filter = ("owner",)
