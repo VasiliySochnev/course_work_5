@@ -1,13 +1,13 @@
 from rest_framework import permissions
 from rest_framework.permissions import BasePermission
 
-from tracker.models import Nice_Habit, Habit
+from tracker.models import Habit, Nice_Habit
 
 
 class IsOwner(BasePermission):
     """
-       Разрешение, которое позволяет только владельцу редактировать или удалять объект.
-       """
+    Разрешение, которое позволяет только владельцу редактировать или удалять объект.
+    """
 
     def has_object_permission(self, request, view, obj):
         # Разрешаем доступ на чтение всем
@@ -15,4 +15,4 @@ class IsOwner(BasePermission):
             return True
 
         # Проверяем, есть ли у объекта атрибут owner и является ли текущий пользователь владельцем
-        return hasattr(obj, 'owner') and obj.owner == request.user
+        return hasattr(obj, "owner") and obj.owner == request.user

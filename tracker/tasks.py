@@ -36,7 +36,7 @@ def message_of_habit():
 
             # Проверяем, если текущее время больше или равно времени привычки
             if current_time >= habit.time:
-                if habit.reward != None:
+                if habit.reward is not None:
                     message = f"Напоминание: пора {habit.action}, за это можешь {habit.reward}"
                     send_telegram_message(chat_id, message)
                 else:

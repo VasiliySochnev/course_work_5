@@ -1,5 +1,4 @@
-from django.shortcuts import get_object_or_404
-from rest_framework import generics, viewsets, status
+from rest_framework import generics, status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -8,7 +7,6 @@ from users.permissions import IsOwner
 
 from .models import Habit, Nice_Habit
 from .paginators import HabitPaginator, NiceHabitPaginator
-from .tasks import message_of_habit
 
 
 class HabitViewSet(viewsets.ModelViewSet):
@@ -31,8 +29,6 @@ class HabitViewSet(viewsets.ModelViewSet):
             permission_classes = [IsAuthenticated]
 
         return [permission() for permission in permission_classes]
-
-
 
     def perform_create(self, serializer):
         days_of_week = serializer.validated_data.get("days_of_week", "")
@@ -69,8 +65,10 @@ class HabitViewSet(viewsets.ModelViewSet):
                 formatted_days = ", ".join(unique_days)
                 instance.days_of_week = formatted_days
             else:
-                return Response({"error": "Не введено ни одного допустимого дня недели."},
-                                status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"error": "Не введено ни одного допустимого дня недели."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
         # Обновляем остальные поля, если они есть
         for attr, value in serializer.validated_data.items():
