@@ -81,6 +81,8 @@ class HabitViewSet(viewsets.ModelViewSet):
 
 
 class NiceHabitListView(generics.ListAPIView):
+    """Контроллер для вывода списка приятных привычек."""
+
     serializer_class = NiceHabitSerializer
     queryset = Nice_Habit.objects.filter(is_public=True)
     pagination_class = NiceHabitPaginator
