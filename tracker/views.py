@@ -10,6 +10,7 @@ from .paginators import HabitPaginator, NiceHabitPaginator
 
 
 class HabitViewSet(viewsets.ModelViewSet):
+    """ViewSet для модели привычка."""
     serializer_class = HabitSerializer
     queryset = Habit.objects.filter(is_public=True)
     pagination_class = HabitPaginator
@@ -31,6 +32,7 @@ class HabitViewSet(viewsets.ModelViewSet):
         return [permission() for permission in permission_classes]
 
     def perform_create(self, serializer):
+        """Метод для создания привычки с валидацией дней."""
         days_of_week = serializer.validated_data.get("days_of_week", "")
         if days_of_week:
             days = [day.strip().lower() for day in days_of_week.split(",")]
@@ -40,12 +42,13 @@ class HabitViewSet(viewsets.ModelViewSet):
         else:
             serializer.save()
 
+        # сохраненной привычке присваиваем владельца
         new_habit = serializer.save()
         new_habit.owner = self.request.user
         new_habit.save()
 
     def update(self, request, *args, **kwargs):
-        # Используем встроенный метод для получения объекта
+        """Метод для редактирования привычки с валидацией дней"""
         instance = self.get_object()
 
         serializer = self.get_serializer(instance, data=request.data, partial=True)
@@ -90,6 +93,8 @@ class NiceHabitListView(generics.ListAPIView):
 
 
 class NiceHabitCreateView(generics.CreateAPIView):
+    """Контроллер для создания приятной привычки."""
+
     serializer_class = NiceHabitSerializer
     permission_classes = [IsAuthenticated]
 
@@ -100,23 +105,28 @@ class NiceHabitCreateView(generics.CreateAPIView):
 
 
 class NiceHabitRetrieveAPIView(generics.RetrieveAPIView):
+    """Контроллер для детального просмотра приятной привычки."""
     serializer_class = NiceHabitSerializer
     queryset = Nice_Habit.objects.filter()
     permission_classes = [IsOwner]
 
 
 class NiceHabitUpdateAPIView(generics.UpdateAPIView):
+    """Контроллер для редактирования приятной привычки."""
+
     serializer_class = NiceHabitSerializer
     queryset = Nice_Habit.objects.all()
     permission_classes = [IsOwner]
 
 
 class NiceHabitDestroyAPIView(generics.DestroyAPIView):
+    """Контроллер для удаления приятной привычки."""
     queryset = Nice_Habit.objects.all()
     permission_classes = [IsOwner]
 
 
 class HabitOwnerListView(generics.ListAPIView):
+    """Контроллер для вывода списка привычек владельца."""
     serializer_class = HabitSerializer
     queryset = Habit.objects.all()
     pagination_class = HabitPaginator
@@ -124,6 +134,7 @@ class HabitOwnerListView(generics.ListAPIView):
 
 
 class NiceHabitOwnerListView(generics.ListAPIView):
+    """Контроллер для вывода списка приятных привычек владельца."""
     serializer_class = NiceHabitSerializer
     queryset = Nice_Habit.objects.all()
     pagination_class = NiceHabitPaginator
