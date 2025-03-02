@@ -39,7 +39,6 @@ class HabitAdmin(admin.ModelAdmin):
         "place",
         "time",
         "days_of_week",
-        "period",
         "action",
         "execution_time",
         "related_habit",

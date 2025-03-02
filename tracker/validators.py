@@ -1,19 +1,18 @@
-from datetime import time, timedelta, timezone
-
+from django.utils import timezone
 from rest_framework import serializers
 
 from tracker.models import Nice_Habit
 
 
 class TimeValidator:
-    """Валидация для времени выполнения"""
+    """Валидация для времени выполнения."""
 
     def __init__(self, field):
         self.field = field
 
     def __call__(self, value):
-        execution_time = value.get(self.field)
-        if execution_time > time(0, 2):
+        tmp_time = dict(value).get(self.field)
+        if tmp_time and tmp_time > timezone.timedelta(minutes=2):
             raise serializers.ValidationError(
                 "Время на выполнение не должно превышать 2 минут."
             )
@@ -56,18 +55,17 @@ class RelatedHabitValidator:
                 raise serializers.ValidationError("Привычка с указанным ID не найдена.")
 
 
-class PeriodValidator:
-    """Валидация для поля period."""
+class Days_Of_WeekValidator:
+    """Валидация для поля days_of_week."""
 
     def __init__(self, field):
         self.field = field
 
     def __call__(self, value):
-        period = value.get(self.field)
-        if period is None:
-            return
-
-        if period < timedelta(days=1):
+        days_of_week = value.get(self.field)
+        print(self.field, value)
+        if days_of_week is None:
             raise serializers.ValidationError(
-                "Привычка не может выполняться реже, чем 1 раз в 7 дней."
+                "Привычка не может выполняться реже, чем 1 раз в 7 дней, "
+                "введите дни(день) недели через запятую (например, 'пн, вт, ср')"
             )

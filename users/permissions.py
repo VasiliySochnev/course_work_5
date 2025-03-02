@@ -1,8 +1,6 @@
 from rest_framework import permissions
 from rest_framework.permissions import BasePermission
 
-from tracker.models import Habit, Nice_Habit
-
 
 class IsOwner(BasePermission):
     """

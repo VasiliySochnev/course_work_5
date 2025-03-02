@@ -8,10 +8,12 @@ from config import settings
 
 
 def send_telegram_message(chat_id, message):
+    """Функция отправки уведомления через Телеграм-бота."""
+
     params = {
         "chat_id": chat_id,
         "text": message,
-        "parse_mode": "Markdown",  # Используйте Markdown для форматирования текста (опционально)
+        "parse_mode": "Markdown",
     }
 
     try:
@@ -20,10 +22,8 @@ def send_telegram_message(chat_id, message):
             params=params,
         )
 
-        # Проверяем статус ответа
-        response.raise_for_status()  # Это вызовет исключение, если код ответа не 200
+        response.raise_for_status()
 
-        # Если нужно, можно проверить ответ от Telegram
         if not response.json().get("ok"):
             print(
                 f"Ошибка при отправке сообщения: {response.json().get('description')}"

@@ -9,6 +9,8 @@ from .services import send_telegram_message
 
 @shared_task
 def message_of_habit():
+    """Задача для отправки уведомлений с проверкой наличия chat_id, времени и дня."""
+
     # Получаем текущий день недели в формате 'пн', 'вт', 'ср' и т.д.
     today = datetime.now().strftime("%a").lower()  # Пример: 'mon', 'tue', 'wed'
     current_time = timezone.now().time()

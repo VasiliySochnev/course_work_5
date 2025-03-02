@@ -2,6 +2,7 @@ from datetime import time
 
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 
 class Nice_Habit(models.Model):
@@ -30,14 +31,6 @@ class Nice_Habit(models.Model):
         ordering = ["action"]
 
 
-def default_time_0():
-    return time(0, 0)
-
-
-def default_time_2():
-    return time(0, 2)
-
-
 class Habit(models.Model):
     """Модель полезной привычки."""
 
@@ -50,7 +43,9 @@ class Habit(models.Model):
     )
     place = models.CharField(max_length=150, verbose_name="Место выполнения привычки")
     time = models.TimeField(
-        default=default_time_0, verbose_name="Время выполнения привычки"
+        default=time(0, 0, 0),
+        verbose_name="Время выполнения привычки",
+        help_text="00:00:00",
     )
     action = models.CharField(max_length=150, verbose_name="Действие")
     related_habit = models.ForeignKey(
@@ -61,29 +56,24 @@ class Habit(models.Model):
         verbose_name="Связанная приятная привычка",
         related_name="related_habits",
     )
-    period = models.IntegerField(
-        default=7,
-        blank=True,
-        null=True,
-        verbose_name="Период выполнения (в днях), 7 - ежедневно",
-    )
     reward = models.CharField(
         max_length=200,
         blank=True,
         null=True,
         verbose_name="Вознаграждение за выполнение",
     )
-    execution_time = models.TimeField(
-        default=default_time_2, verbose_name="Время на выполнение привычки"
+    execution_time = models.DurationField(
+        default=timezone.timedelta(minutes=2),
+        verbose_name="Время на выполнение привычки",
+        help_text="00:00:00",
     )
     is_public = models.BooleanField(default=True, verbose_name="Признак публичности")
 
     days_of_week = models.CharField(
         max_length=100,
+        default="пн, вт, ср, чт, пт, сб, вс",
         verbose_name="Дни недели",
-        blank=True,
-        null=True,
-        help_text="Введите дни недели через запятую (например, 'пн, вт, ср')",
+        help_text="Введите дни недели через запятую (например, 'пн, вт, ср'), по умолчанию: ежедневно",
     )
     id = models.AutoField(primary_key=True)
 

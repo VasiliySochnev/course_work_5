@@ -1,9 +1,14 @@
+import os
 from datetime import timedelta
 from pathlib import Path
 
+from dotenv import load_dotenv
+
+load_dotenv(override=True)
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = "django-insecure-&5q7awv@#q8(g_u8wjvv05=q3)9&$qjhz_*-o5&klnoxr88gc^"
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 DEBUG = True
 
@@ -89,12 +94,12 @@ WSGI_APPLICATION = "config.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "course_work_5",
-        "USER": "postgres",
-        "PASSWORD": 1234,
+        "NAME": os.getenv("NAME"),
+        "USER": os.getenv("USER"),
+        "PASSWORD": os.getenv("PASSWORD"),
         "OPTIONS": {"client_encoding": "utf8"},
         "HOST": "localhost",
-        "PORT": 5432,
+        "PORT": os.getenv("PORT"),
     }
 }
 
@@ -162,6 +167,6 @@ CELERY_BEAT_SCHEDULE = {
     },
 }
 
-TELEGRAM_BOT_TOKEN = "8086321251:AAFHtLX-9YMuByUaH7pjpqUo5x4xSG-W894"
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 
 URL_TELEGRAM = "https://api.telegram.org/bot"

@@ -2,7 +2,8 @@ from rest_framework import generics, status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from tracker.serializers import HabitSerializer, NiceHabitSerializer
+from tracker.serializers import (HabitSerializer, HabitUpdateSerializer,
+                                 NiceHabitSerializer)
 from users.permissions import IsOwner
 
 from .models import Habit, Nice_Habit
@@ -11,14 +12,29 @@ from .paginators import HabitPaginator, NiceHabitPaginator
 
 class HabitViewSet(viewsets.ModelViewSet):
     """ViewSet для модели привычка."""
-    serializer_class = HabitSerializer
+
     queryset = Habit.objects.filter(is_public=True)
     pagination_class = HabitPaginator
 
+    def get_serializer_class(self):
+        """Метод для получения сериализатора в зависимости от действия."""
+        if self.action in (
+            "create",
+            "destroy",
+            "retrieve",
+            "list",
+        ):
+            return HabitSerializer
+        elif self.action == "update" or self.action == "partial_update":
+            return HabitUpdateSerializer
+        return super().get_serializer_class()
+
     def get_permissions(self):
+        """Метод для распределения ограничений в зависимости от действия."""
         if self.action in (
             "destroy",
             "update",
+            "partial_update",
             "retrieve",
         ):
             permission_classes = [IsOwner]
@@ -106,6 +122,7 @@ class NiceHabitCreateView(generics.CreateAPIView):
 
 class NiceHabitRetrieveAPIView(generics.RetrieveAPIView):
     """Контроллер для детального просмотра приятной привычки."""
+
     serializer_class = NiceHabitSerializer
     queryset = Nice_Habit.objects.filter()
     permission_classes = [IsOwner]
@@ -121,12 +138,14 @@ class NiceHabitUpdateAPIView(generics.UpdateAPIView):
 
 class NiceHabitDestroyAPIView(generics.DestroyAPIView):
     """Контроллер для удаления приятной привычки."""
+
     queryset = Nice_Habit.objects.all()
     permission_classes = [IsOwner]
 
 
 class HabitOwnerListView(generics.ListAPIView):
     """Контроллер для вывода списка привычек владельца."""
+
     serializer_class = HabitSerializer
     queryset = Habit.objects.all()
     pagination_class = HabitPaginator
@@ -135,6 +154,7 @@ class HabitOwnerListView(generics.ListAPIView):
 
 class NiceHabitOwnerListView(generics.ListAPIView):
     """Контроллер для вывода списка приятных привычек владельца."""
+
     serializer_class = NiceHabitSerializer
     queryset = Nice_Habit.objects.all()
     pagination_class = NiceHabitPaginator

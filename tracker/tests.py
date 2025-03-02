@@ -1,9 +1,12 @@
-from datetime import time
+from unittest.mock import patch
 
+from django.conf import settings
+from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APITestCase
 
 from tracker.models import Habit, Nice_Habit
+from tracker.services import send_telegram_message
 from users.models import User
 
 
@@ -15,19 +18,12 @@ class HabitTestCase(APITestCase):
         self.owner = User.objects.create(
             email="owner@mail.ru",
             password="ownerpassword",
-            tg_chat_id=633017007,
             is_active=True,
         )
         # Создаем обычного пользователя
         self.regular_user = User.objects.create(
             email="regular@mail.ru", password="regularpassword", is_active=True
         )
-
-        def default_time_0():
-            return time(0, 0)
-
-        def default_time_2():
-            return time(0, 2)
 
         # Создаем приятную привычку, владелец будет 'owner'
         self.nice_habit = Nice_Habit.objects.create(
@@ -38,13 +34,12 @@ class HabitTestCase(APITestCase):
         self.habit = Habit.objects.create(
             owner=self.owner,
             place="Test Place",
-            time=default_time_0(),
+            time="00:00:00",
             action="Test Habit",
             related_habit=self.nice_habit,
             reward=None,
-            execution_time=default_time_2(),
+            execution_time="00:02:00",
             is_public=True,
-            days_of_week={"пн, вт, ср"},
         )
 
     # ===============================================================
@@ -101,15 +96,14 @@ class HabitTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.habit.refresh_from_db()
         self.assertEqual(self.habit.place, "Updated place")
-        self.assertEqual(self.habit.action, "Updated action")  # Проверяем обновление
+        self.assertEqual(self.habit.action, "Updated action")
 
-    # def test_regular_user_can_edit_habit(self):
-    #     """Тестирование редактирования привычки для обычного пользователя."""
-    #     self.client.force_authenticate(user=self.regular_user)
-    #     data = {"place": "Updated place_2", "action": "Updated action_2"}
-    #     response = self.client.patch(f"/habits/{self.habit.id}/", data)
-    #     print(response.json())
-    #     self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+    def test_regular_user_can_edit_habit(self):
+        """Тестирование редактирования привычки для обычного пользователя."""
+        self.client.force_authenticate(user=self.regular_user)
+        data = {"place": "Updated place_2", "action": "Updated action_2"}
+        response = self.client.patch(f"/habits/{self.habit.id}/", data)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_owner_can_edit_nice_habit(self):
         """Тестирование редактирования приятной привычки для владельца."""
@@ -119,9 +113,7 @@ class HabitTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.nice_habit.refresh_from_db()
-        self.assertEqual(
-            self.nice_habit.action, "Updated action"
-        )  # Проверяем обновление
+        self.assertEqual(self.nice_habit.action, "Updated action")
 
     def test_regular_user_can_edit_nice_habit(self):
         """Тестирование редактирования приятной привычки для обычного пользователя."""
@@ -157,9 +149,68 @@ class HabitTestCase(APITestCase):
         response = self.client.delete(f"/n_habit/delete/{self.nice_habit.id}/")
         self.assertEqual(response.status_code, 403)
 
+    # ===============================================================
+    # Создание
+    def test_regular_user_can_created_habit(self):
+        """Тестирование создания привычки для обычного пользователя."""
+        data = {
+            "place": "Test Place",
+            "time": "00:00:00",
+            "action": "Test Habit",
+            "reward": "Test reward",
+            "execution_time": "00:02:00",
+            "is_public": True,
+            "days_of_week": "пн",
+        }
+        self.client.force_authenticate(user=self.regular_user)
+        response = self.client.post("/habits/", data=data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_regular_user_can_created_habit_validators(self):
+        """Тестирование создания привычки для обычного пользователя c отработкой валидаторов."""
+        data = {
+            "place": "Test Place",
+            "time": "00:00:00",
+            "action": "Test Habit",
+            "related_habit": 1,  # выбрана связанная привычка с вознаграждением
+            "reward": "Test reward",
+            "execution_time": "00:05:00",  # время больше 2 минут
+            "is_public": True,
+            "days_of_week": "",  # не выбранны дни недели
+        }
+        self.client.force_authenticate(user=self.regular_user)
+        response = self.client.post("/habits/", data=data)
+        print(response.json())
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
     def tearDown(self):
         # Очищаем данные после теста
         self.owner.delete()
         self.regular_user.delete()
         self.habit.delete()
         self.nice_habit.delete()
+
+    # ===============================================================
+    # Отправка сообщения
+
+
+class TelegramMessageTest(TestCase):
+    @patch("requests.get")
+    def test_send_telegram_message_success(self, mock_get):
+        """Тестирование функции отправки сообщения с правильными параметрами."""
+        mock_get.return_value.ok = True
+        mock_get.return_value.json.return_value = {"ok": True}
+
+        chat_id = "123456"
+        message = "Привет!"
+
+        send_telegram_message(chat_id, message)
+
+        mock_get.assert_called_once_with(
+            f"{settings.URL_TELEGRAM}{settings.TELEGRAM_BOT_TOKEN}/sendMessage",
+            params={
+                "chat_id": chat_id,
+                "text": message,
+                "parse_mode": "Markdown",
+            },
+        )
