@@ -54,7 +54,7 @@ class HabitTestCase(APITestCase):
     def test_owner_can_list_nice_habits(self):
         """Тестирование списка приятных привычек для владельца."""
         self.client.force_authenticate(user=self.owner)
-        response = self.client.get("/n_habit/")
+        response = self.client.get("/n_habits/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_regular_user_can_list_habits(self):
@@ -66,7 +66,7 @@ class HabitTestCase(APITestCase):
     def test_regular_user_can_list_nice_habits(self):
         """Тестирование списка приятных привычек для обычного пользователя."""
         self.client.force_authenticate(user=self.regular_user)
-        response = self.client.get("/n_habit/")
+        response = self.client.get("/n_habits/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     # =====================================================================
@@ -75,13 +75,13 @@ class HabitTestCase(APITestCase):
     def test_owner_can_list_owner_habits(self):
         """Тестирование списка привычек созданных владельцем."""
         self.client.force_authenticate(user=self.owner)
-        response = self.client.get("/own_habit/")
+        response = self.client.get("/habits/own_habits/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_owner_can_list_owner_nice_habits(self):
         """Тестирование списка приятных привычек созданных владельцем."""
         self.client.force_authenticate(user=self.owner)
-        response = self.client.get("/own_n_habit/")
+        response = self.client.get("/n_habits/own_n_habits/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     # ======================================================================
@@ -109,7 +109,7 @@ class HabitTestCase(APITestCase):
         """Тестирование редактирования приятной привычки для владельца."""
         self.client.force_authenticate(user=self.owner)
         data = {"action": "Updated action"}
-        response = self.client.patch(f"/n_habit/update/{self.nice_habit.id}/", data)
+        response = self.client.patch(f"/n_habits/{self.nice_habit.id}/", data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.nice_habit.refresh_from_db()
@@ -119,8 +119,19 @@ class HabitTestCase(APITestCase):
         """Тестирование редактирования приятной привычки для обычного пользователя."""
         self.client.force_authenticate(user=self.regular_user)
         data = {"action": "Updated action_2"}
-        response = self.client.patch(f"/n_habit/update/{self.nice_habit.id}/", data)
+        response = self.client.patch(f"/n_habits/{self.nice_habit.id}/", data)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_regular_user_can_update_profile(self):
+        """Тестирование редактирования своего профиля."""
+        self.client.force_authenticate(user=self.regular_user)
+        data = {
+            "email": "regular@mail.ru",
+            "password": "regularpassword",
+            "first_name": "Test",
+        }
+        response = self.client.patch(f"/users/update/{self.regular_user.id}/", data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     # ==================================================
     # Удаление
@@ -134,7 +145,7 @@ class HabitTestCase(APITestCase):
     def test_owner_can_destroy_nice_habit(self):
         """Тестирование удаления приятной привычки для владельца."""
         self.client.force_authenticate(user=self.owner)
-        response = self.client.delete(f"/n_habit/delete/{self.nice_habit.id}/")
+        response = self.client.delete(f"/n_habits/{self.nice_habit.id}/")
         self.assertEqual(response.status_code, 204)
 
     def test_regular_user_can_destroy_habit(self):
@@ -146,7 +157,7 @@ class HabitTestCase(APITestCase):
     def test_regular_user_can_destroy_nice_habit(self):
         """Тестирование удаления приятной привычки для обычного пользователя."""
         self.client.force_authenticate(user=self.regular_user)
-        response = self.client.delete(f"/n_habit/delete/{self.nice_habit.id}/")
+        response = self.client.delete(f"/n_habits/{self.nice_habit.id}/")
         self.assertEqual(response.status_code, 403)
 
     # ===============================================================

@@ -1,4 +1,5 @@
-from rest_framework import generics, status, viewsets
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -98,64 +99,47 @@ class HabitViewSet(viewsets.ModelViewSet):
         instance.save()
         return Response(serializer.data)
 
+    @action(detail=False, methods=["get"], url_path="own_habits")
+    def own_habits(self, request):
+        # метод для вывода списка привычек владельца
+        own_habits = Habit.objects.filter(owner=request.user)
+        serializer = HabitSerializer(own_habits, many=True)
+        return Response(serializer.data)
 
-class NiceHabitListView(generics.ListAPIView):
-    """Контроллер для вывода списка приятных привычек."""
+
+class NiceHabitViewSet(viewsets.ModelViewSet):
+    """ViewSet для модели приятная привычка."""
 
     serializer_class = NiceHabitSerializer
     queryset = Nice_Habit.objects.filter(is_public=True)
     pagination_class = NiceHabitPaginator
-    permission_classes = [IsAuthenticated]
 
+    def get_permissions(self):
+        """Метод для распределения ограничений в зависимости от действия."""
+        if self.action in (
+            "destroy",
+            "update",
+            "partial_update",
+            "retrieve",
+        ):
+            permission_classes = [IsOwner]
+        elif self.action in ("create",):
+            permission_classes = [IsAuthenticated]
+        elif self.action in ("list",):
+            permission_classes = [IsAuthenticated]
+        else:
+            permission_classes = [IsAuthenticated]
 
-class NiceHabitCreateView(generics.CreateAPIView):
-    """Контроллер для создания приятной привычки."""
-
-    serializer_class = NiceHabitSerializer
-    permission_classes = [IsAuthenticated]
+        return [permission() for permission in permission_classes]
 
     def perform_create(self, serializer):
         new_nice_habit = serializer.save()
         new_nice_habit.owner = self.request.user
         new_nice_habit.save()
 
-
-class NiceHabitRetrieveAPIView(generics.RetrieveAPIView):
-    """Контроллер для детального просмотра приятной привычки."""
-
-    serializer_class = NiceHabitSerializer
-    queryset = Nice_Habit.objects.filter()
-    permission_classes = [IsOwner]
-
-
-class NiceHabitUpdateAPIView(generics.UpdateAPIView):
-    """Контроллер для редактирования приятной привычки."""
-
-    serializer_class = NiceHabitSerializer
-    queryset = Nice_Habit.objects.all()
-    permission_classes = [IsOwner]
-
-
-class NiceHabitDestroyAPIView(generics.DestroyAPIView):
-    """Контроллер для удаления приятной привычки."""
-
-    queryset = Nice_Habit.objects.all()
-    permission_classes = [IsOwner]
-
-
-class HabitOwnerListView(generics.ListAPIView):
-    """Контроллер для вывода списка привычек владельца."""
-
-    serializer_class = HabitSerializer
-    queryset = Habit.objects.all()
-    pagination_class = HabitPaginator
-    permission_classes = [IsOwner]
-
-
-class NiceHabitOwnerListView(generics.ListAPIView):
-    """Контроллер для вывода списка приятных привычек владельца."""
-
-    serializer_class = NiceHabitSerializer
-    queryset = Nice_Habit.objects.all()
-    pagination_class = NiceHabitPaginator
-    permission_classes = [IsOwner]
+    @action(detail=False, methods=["get"], url_path="own_n_habits")
+    def own_n_habits(self, request):
+        # метод для вывода списка приятных привычек владельца
+        own_n_habits = Nice_Habit.objects.filter(owner=request.user)
+        serializer = self.get_serializer(own_n_habits, many=True)
+        return Response(serializer.data)
