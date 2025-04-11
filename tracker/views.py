@@ -3,8 +3,11 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from tracker.serializers import (HabitSerializer, HabitUpdateSerializer,
-                                 NiceHabitSerializer)
+from tracker.serializers import (
+    HabitSerializer,
+    HabitUpdateSerializer,
+    NiceHabitSerializer,
+)
 from users.permissions import IsOwner
 
 from .models import Habit, Nice_Habit
