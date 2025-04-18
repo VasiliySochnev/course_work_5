@@ -15,6 +15,9 @@ RUN curl -sSL https://install.python-poetry.org | python3 - \
 # Добавление Poetry в системный PATH
 ENV PATH="/root/.local/bin:$PATH"
 
+# Проверка версии Poetry для диагностики
+RUN poetry --version
+
 # Копируем только файл зависимостей и устанавливаем их
 COPY pyproject.toml poetry.lock* ./
 
