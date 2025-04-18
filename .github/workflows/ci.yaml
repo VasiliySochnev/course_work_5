@@ -31,7 +31,9 @@ jobs:
         run: poetry install --no-root
 
       - name: Install Flake8
-        run: poetry add flake8
+        run: |
+          poetry install --no-root
+          poetry add flake8
 
       - name: Run flake8
         run: flake8 .
