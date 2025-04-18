@@ -36,6 +36,30 @@ jobs:
     needs: lint
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: 1234
+          POSTGRES_DB: course_work_5
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      POSTGRES_DB: course_work_5
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      HOST: localhost
+      PORT: 5432
+      DEBUG: True
+
     steps:
       - name: Check out code
         uses: actions/checkout@v3
@@ -51,15 +75,18 @@ jobs:
       - name: Install dependencies
         run: poetry install --no-root
 
+      - name: Wait for PostgreSQL
+        run: |
+          echo "Waiting for PostgreSQL to be ready..."
+          until pg_isready -h localhost -p 5432; do sleep 1; done
+
       - name: Check Django settings
-        env:
-          SECRET_KEY: ${{ secrets.SECRET_KEY }}
         run: poetry run python manage.py check
 
-      - name: Run tests
-        env:
-          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      - name: Run migrations
+        run: poetry run python manage.py migrate
 
+      - name: Run tests
         run: poetry run python manage.py test
 
 
