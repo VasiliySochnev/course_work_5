@@ -26,10 +26,8 @@ jobs:
           key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
 
 
-      - name: Install flake8
-        run: |
-          poetry add --dev flake8
-          poetry install --no-root
+      - name: Install dependencies
+        run: poetry install --no-root
 
       - name: Run flake8
         run: poetry run flake8 .
@@ -52,6 +50,9 @@ jobs:
 
       - name: Install dependencies
         run: poetry install --no-root
+
+      - name: Check Django settings
+        run: poetry run python manage.py check
 
       - name: Run tests
         env:
