@@ -27,17 +27,13 @@ jobs:
           curl -sSL https://install.python-poetry.org | python3 -
           echo "/home/runner/.local/bin" >> $GITHUB_PATH
 
-      - name: Install dependencies
-        run: poetry install --no-root
-
-
-      - name: Install Flake8
+      - name: Install flake8
         run: |
+          poetry add --dev flake8
           poetry install --no-root
-          poetry add flake8
 
       - name: Run flake8
-        run: flake8 .
+        run: poetry run flake8 .
 
   test:
     needs: lint
