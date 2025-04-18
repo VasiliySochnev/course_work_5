@@ -14,9 +14,17 @@ jobs:
         with:
           python-version: '3.10'
 
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "::add-path::$(python3 -m site --user-base)/bin"
+
+      - name: Install dependencies
+        run: poetry install
+
+
       - name: Install flake8
         run: |
-          poetry install
           poetry add flake8
 
       - name: Run flake8
