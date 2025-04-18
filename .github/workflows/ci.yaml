@@ -14,6 +14,14 @@ jobs:
         with:
           python-version: '3.10'
 
+      - name: Cache Poetry dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/pypoetry
+            ~/.local/share/pypoetry
+            key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+
       - name: Install Poetry
         run: |
           curl -sSL https://install.python-poetry.org | python3 -
@@ -22,10 +30,6 @@ jobs:
       - name: Install dependencies
         run: poetry install
 
-
-      - name: Install flake8
-        run: |
-          poetry add flake8
 
       - name: Run flake8
         run: flake8 .
@@ -45,8 +49,7 @@ jobs:
 
 
       - name: Install dependencies
-        run: |
-          poetry install
+        run: poetry install
 
       - name: Run tests
         run: python manage.py test
