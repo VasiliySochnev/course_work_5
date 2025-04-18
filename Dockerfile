@@ -12,6 +12,9 @@ RUN apt-get update \
 RUN curl -sSL https://install.python-poetry.org | python3 - \
   && ln -s /root/.local/bin/poetry /usr/local/bin/poetry
 
+# Добавление Poetry в системный PATH
+ENV PATH="/root/.local/bin:$PATH"
+
 # Копируем только файл зависимостей и устанавливаем их
 COPY pyproject.toml poetry.lock* ./
 
