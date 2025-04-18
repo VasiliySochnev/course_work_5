@@ -13,6 +13,30 @@ services:
     env_file:
       - ./.env
 
+  celery:
+    build: .
+    command: celery -A config worker --loglevel=info --pool=eventlet
+    volumes:
+      - .:/app
+    depends_on:
+      - web
+      - redis
+      - db
+    env_file:
+      - ./.env
+
+  celery-beat:
+    build: .
+    command: celery -A config beat --loglevel=info
+    volumes:
+      - .:/app
+    depends_on:
+      - web
+      - redis
+      - db
+    env_file:
+      - ./.env
+
   nginx:
     build:
       context: ./nginx
@@ -27,12 +51,10 @@ services:
 
   db:
     image: postgres
-    environment:
-      POSTGRES_DB: postgres_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 1234
     volumes:
       - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - ./.env
 
   redis:
     image: redis
