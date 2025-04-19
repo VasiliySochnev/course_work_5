@@ -12,19 +12,17 @@ RUN apt-get update \
 RUN pip install --upgrade pip \
   && pip install poetry
 
+# Обязательно: путь до poetry в PATH
 ENV PATH="/root/.local/bin:$PATH"
 
-
-RUN poetry --version
-
+# Проверка: убедимся, что poetry точно встал и где он лежит
+RUN which poetry && poetry --version && echo $PATH && ls -la /root/.local/bin
 
 # Копируем только файл зависимостей и устанавливаем их
 COPY pyproject.toml poetry.lock* ./
 
-
 RUN poetry config virtualenvs.create false \
   && poetry install --no-interaction --no-ansi --no-root
-
 
 # Копируем остальной код
 COPY . .
@@ -34,3 +32,4 @@ RUN mkdir -p /app/staticfiles && chmod -R 755 /app/staticfiles
 EXPOSE 8000
 
 CMD ["sh", "-c", "python manage.py collectstatic --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:8000"]
+
