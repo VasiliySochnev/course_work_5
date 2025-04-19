@@ -12,6 +12,12 @@ RUN apt-get update \
 RUN pip install --upgrade pip \
   && pip install poetry
 
+ENV PATH="/root/.local/bin:$PATH"
+
+
+RUN poetry --version
+
+
 # Копируем только файл зависимостей и устанавливаем их
 COPY pyproject.toml poetry.lock* ./
 
