@@ -8,21 +8,17 @@ RUN apt-get update \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
-# Установка Poetry
-RUN curl -sSL https://install.python-poetry.org | python3 - \
-  && ln -s /root/.local/bin/poetry /usr/local/bin/poetry
-
-# Добавление Poetry в системный PATH
-ENV PATH="/root/.local/bin:$PATH"
-
-# Проверка версии Poetry для диагностики
-RUN poetry --version
+# Установка Poetry через pip
+RUN pip install --upgrade pip \
+  && pip install poetry
 
 # Копируем только файл зависимостей и устанавливаем их
 COPY pyproject.toml poetry.lock* ./
 
+
 RUN poetry config virtualenvs.create false \
   && poetry install --no-interaction --no-ansi --no-root
+
 
 # Копируем остальной код
 COPY . .
