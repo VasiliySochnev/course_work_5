@@ -12,7 +12,6 @@ RUN apt-get update \
 RUN pip install --upgrade pip \
   && pip install poetry
 
-# Проверим, что он на месте
 RUN which poetry && poetry --version && echo $PATH
 
 # Копируем файлы зависимостей
